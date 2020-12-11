@@ -58,6 +58,6 @@ from numpy import savez_compressed
 # np.save('./data/sketch_camel_door.npy', arr=sketch)
 # np.save('./data/photo_camel_door.npy', arr=photo)
 
-filename = 'flower_berry.npz'
+filename = 'strawberry_teddybear.npz'
 np.savez_compressed(filename, sketch, photo)
 print("success")

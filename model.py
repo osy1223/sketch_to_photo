@@ -201,7 +201,7 @@ def summarize_performance(step, g_model, dataset, n_samples=3):
 	print('>Saved: %s and %s' % (filename1, filename2))
 
 # train pix2pix models
-def train(d_model, g_model, gan_model, dataset, n_epochs=200, n_batch=8):
+def train(d_model, g_model, gan_model, dataset, n_epochs=150, n_batch=16):
 	# determine the output square shape of the discriminator
 	n_patch = d_model.output_shape[1]
 	# unpack dataset

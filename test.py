@@ -5,7 +5,7 @@ from keras.preprocessing.image import load_img
 from numpy import load
 from numpy import expand_dims
 from matplotlib import pyplot
-
+ 
 # load an image
 def load_image(filename, size=(256,256)):
    # load image with the preferred size
@@ -17,21 +17,77 @@ def load_image(filename, size=(256,256)):
    # reshape to 1 sample
    pixels = expand_dims(pixels, 0)
    return pixels
-
+ 
 # load source image
-src_image = load_image('./n07745940_645-2.png')
-# print('Loaded', src_image.shape)
-# pyplot.imshow(src_image[0])
-# pyplot.axis('off')
-# pyplot.show()
+import glob
+a = glob.glob("./teddy.png")
+sketch_idx = []
+
+for i in range(len(a)):
+    c = a[i].split("\\")
+    c = c[0]+"/"+c[1]
+    sketch_idx.append(c)
+
+src_image=[]
+for i in range(len(sketch_idx)):
+    src_image.append(load_image(sketch_idx[i]))
+# print(src_image)
 
 # load model
-model = load_model('./model_041600.h5')
-# generate image from source
-gen_image = model.predict(src_image)
-# scale from [-1,1] to [0,1]
-gen_image = (gen_image + 1) / 2.0
-# plot the image
-pyplot.imshow(gen_image[0])
-pyplot.axis('off')
+model = load_model('model_043800.h5')
+
+gen_image = []
+for i in range(len(sketch_idx)):
+    gen = model.predict(src_image[i])
+    gen = (gen + 1) / 2.0 # scale from [-1,1] to [0,1]
+    gen_image.append(gen)
+
+n_samples = len(sketch_idx)
+for i in range(n_samples):
+    # pyplot.figure(figsize=(5,5))
+    pyplot.subplot(2, n_samples, 1 + i)
+    pyplot.axis('off')
+    pyplot.imshow(src_image[i][0])
+# plot generated target image
+for i in range(n_samples):
+    pyplot.subplot(2, n_samples, 1 + n_samples + i)
+    pyplot.axis('off')
+    pyplot.imshow(gen_image[i][0])
+
+pyplot.show()
+
+a = glob.glob("./berry.png")
+sketch_idx = []
+
+for i in range(len(a)):
+    c = a[i].split("\\")
+    c = c[0]+"/"+c[1]
+    sketch_idx.append(c)
+
+src_image=[]
+for i in range(len(sketch_idx)):
+    src_image.append(load_image(sketch_idx[i]))
+# print(src_image)
+
+# load model
+model = load_model('model_043800.h5')
+
+gen_image = []
+for i in range(len(sketch_idx)):
+    gen = model.predict(src_image[i])
+    gen = (gen + 1) / 2.0 # scale from [-1,1] to [0,1]
+    gen_image.append(gen)
+
+n_samples = len(sketch_idx)
+for i in range(n_samples):
+    # pyplot.figure(figsize=(5,5))
+    pyplot.subplot(2, n_samples, 1 + i)
+    pyplot.axis('off')
+    pyplot.imshow(src_image[i][0])
+# plot generated target image
+for i in range(n_samples):
+    pyplot.subplot(2, n_samples, 1 + n_samples + i)
+    pyplot.axis('off')
+    pyplot.imshow(gen_image[i][0])
+
 pyplot.show()
