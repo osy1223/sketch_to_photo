@@ -448,3 +448,4 @@ fit(train_dataset, EPOCHS, test_dataset)
 # Run the trained model on a few examples from the test dataset
 for inp, tar in test_dataset.take(5):
   generate_images(generator, inp, tar)
+

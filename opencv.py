@@ -22,3 +22,4 @@ ret, thresh1 = cv2.threshold(blur, 127, 255, cv2.THRESH_BINARY)
 edged = cv2.Canny(blur, 10, 250)
 cv2.imshow('Edged', edged)
 cv2.waitKey(0)
+

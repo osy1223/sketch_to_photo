@@ -61,3 +61,4 @@ from numpy import savez_compressed
 filename = 'strawberry_teddybear.npz'
 np.savez_compressed(filename, sketch, photo)
 print("success")
+
