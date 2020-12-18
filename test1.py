@@ -19,10 +19,10 @@ def load_image(filename, size=(256,256)):
 	return pixels
  
 # load source image
-src_image = load_image('./test_img/teddy.png')
+src_image = load_image('./test_img/teapot.jpg')
 print('Loaded', src_image.shape)
 # load model
-model = load_model('./150_16_model_bear_berry/model_043800.h5')
+model = load_model('./model_020500.h5')
 # generate image from source
 gen_image = model.predict(src_image)
 # scale from [-1,1] to [0,1]

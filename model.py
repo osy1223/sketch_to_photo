@@ -9,7 +9,7 @@ from keras.models import Model
 from keras.models import Input
 from keras.layers import Conv2D
 from keras.layers import Conv2DTranspose, UpSampling2D
-from keras.layers import LeakyReLU
+from keras.layers import LeakyReLU, ELU
 from keras.layers import Activation
 from keras.layers import Concatenate
 from keras.layers import Dropout
@@ -54,7 +54,7 @@ def define_encoder_block(layer_in, n_filters, batchnorm=True):
 	g = Conv2D(n_filters, (4,4), strides=(2,2), padding='same', kernel_initializer=init)(layer_in)
 	if batchnorm:
 		g = BatchNormalization()(g, training=True)
-	g = LeakyReLU(alpha=0.2)(g)
+	g = ELU(alpha=0.2)(g)
 	return g
 
 # decoder (upsampling)
@@ -112,9 +112,8 @@ def define_gan(g_model, d_model, image_shape):
 	gen_out = g_model(in_src)
 	dis_out = d_model([in_src, gen_out])
 	model = Model(in_src, [dis_out, gen_out])
-	opt = Ad.02	
-	am(lr=0.0002, beta_1=0.5)
-	model.compile(loss=['binary_crossentropy', 'mae'], optimizer=opt, loss_weights=[1,50])
+	opt = Adam(lr=0.0002, beta_1=0.5)
+	model.compile(loss=['binary_crossentropy', 'mae'], optimizer=opt, loss_weights=[1, 100])
 	return model
 
 # 훈련 이미지 준비
@@ -181,7 +180,7 @@ def summarize_performance(step, g_model, dataset, n_samples=3):
 	print('>Saved: %s and %s' % (filename1, filename2))
 
 # 훈련
-def train(d_model, g_model, gan_model, dataset, n_epochs=1, n_batch=1):
+def train(d_model, g_model, gan_model, dataset, n_epochs=150, n_batch=32):
 	# 판별자의 output shape
 	n_patch = d_model.output_shape[1]
 	
@@ -193,6 +192,11 @@ def train(d_model, g_model, gan_model, dataset, n_epochs=1, n_batch=1):
 	# 전체 epoch동안의 train data 분할 횟수(batch 횟수)
 	n_steps = bat_per_epo * n_epochs
 
+	print("n_steps : ", n_steps)
+	d_loss1_list=[]
+	d_loss2_list=[]
+	g_loss_list=[]
+
 	for i in range(n_steps):
 		# batch 한 번 만큼의 sketch, photo
 		[X_realA, X_realB], y_real = generate_real_samples(dataset, n_batch, n_patch)
@@ -202,21 +206,51 @@ def train(d_model, g_model, gan_model, dataset, n_epochs=1, n_batch=1):
 
 		# 진짜 사진을 '진짜'라고 판별
 		d_loss1 = d_model.train_on_batch([X_realA, X_realB], y_real)
+		d_loss1_list.append(d_loss1)
 
 		# 가짜 사진을 '가짜'라고 판별
 		d_loss2 = d_model.train_on_batch([X_realA, X_fakeB], y_fake)
+		d_loss2_list.append(d_loss2)
 
 		# GAN 
-		g_loss1, g_loss2, g_loss3 = gan_model.train_on_batch(X_realA, [y_real, X_realB])
+		g_loss, _, _ = gan_model.train_on_batch(X_realA, [y_real, X_realB])
+		g_loss_list.append(g_loss)
 		# print('>%d, d1[%.3f] d2[%.3f] g[%.3f]' % (i+1, d_loss1, d_loss2, g_loss))
-		print('>%d, d1[%.3f] d2[%.3f] g1[%.3f] g2[%.3f] g3[%.3f]' % (i+1, d_loss1, d_loss2, g_loss1, g_loss2, g_loss3))
+		print('>%d, d1[%.3f] d2[%.3f] g[%.3f]' % (i+1, d_loss1, d_loss2, g_loss))
 
 		# 진행 상황 확인
 		if (i+1) % (bat_per_epo * 10) == 0:
 			summarize_performance(i, g_model, dataset)
 
+	# loss plot
+	#그래프
+	import matplotlib.pyplot as plt
+
+	# epochs = len(iterations)
+	x_axis = range(0,n_steps)
+
+	fig, ax = plt.subplots()
+	ax.plot(x_axis, d_loss1_list, label="d_loss1")
+	ax.plot(x_axis, d_loss2_list, label="d_loss2")
+
+	ax.legend()
+	plt.ylabel("Loss")
+	plt.xlabel("Iteration")
+	plt.title("GAN Loss")
+	# plt.show()
+
+	fig,ax = plt.subplots()
+	ax.plot(x_axis, g_loss_list, label="g_loss")
+
+	ax.legend()
+	plt.ylabel("Loss")
+	plt.xlabel("Iteration")
+	plt.title("GAN Loss")
+	# plt.show()
+
+
 # 데이터 호출
-dataset = load_real_samples('strawberry_teddybear.npz')
+dataset = load_real_samples('berry_bear_pot_car.npz')
 print('Loaded', dataset[0].shape, dataset[1].shape)
 
 # sketch와 photo의 sahpe

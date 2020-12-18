@@ -12,7 +12,7 @@ for i in range(len(a)):
 
     sketch_idx.append(c)
 
-# print(len(sketch_idx)) #3330
+# print(len(sketch_idx)) #9148
 
 
 #메모리를 적게 쓰기 위해 uint8로 
@@ -37,13 +37,12 @@ for i, idx in (enumerate(sketch_idx)):
     # print("idx : ",idx)
     idx = idx.split("/")[1]+"/"+idx.split("/")[2]
     idx = idx.split("-")[0]
-    img = load_img("./data/photo/"+ idx+".jpg")
+    img = load_img("./data/photo/"+idx+"-removebg-preview"+".png") #배경 제거 후 png로 바뀜 
     img = img_to_array(img)
     photo[i] = img
 
-
-# print(sketch.shape) #(3324, 256, 256, 3)
-# print(photo.shape) #(3324, 256, 256, 3)
+print(sketch.shape) #(3324, 256, 256, 3)
+print(photo.shape) #(3324, 256, 256, 3)
 
 # print("=============================")
 # print(sketch)
@@ -55,10 +54,9 @@ for i, idx in (enumerate(sketch_idx)):
 from numpy import savez_compressed
 
 # sketch: X, photo: Y
-# np.save('./data/sketch_camel_door.npy', arr=sketch)
-# np.save('./data/photo_camel_door.npy', arr=photo)
+np.save('./data/sketch.npy', arr=sketch)
+np.save('./data/photo.npy', arr=photo)
 
-filename = 'strawberry_teddybear.npz'
+filename = 'data.npz'
 np.savez_compressed(filename, sketch, photo)
 print("success")
-
